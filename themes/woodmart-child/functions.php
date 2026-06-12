@@ -91,6 +91,26 @@ add_filter('get_custom_logo', function () {
            . esc_html($name) . '</a>';
 }, 20);
 
+// WoodMart may bypass get_custom_logo and render its own logo from options
+// Override the WoodMart logo output directly
+add_filter('woodmart_custom_logo', function () {
+    $name = 'Магазин Смокинг';
+    $url  = esc_url(home_url('/'));
+    return '<a href="' . $url . '" class="custom-logo-link site-logo-text" rel="home"
+              style="font-family:\'Cormorant Garamond\',serif;font-size:19px;letter-spacing:3.5px;text-transform:uppercase;color:#fff;font-weight:400;text-decoration:none;">'
+           . esc_html($name) . '</a>';
+});
+
+// ── Hide page title on front page ─────────────────────────────────────────────
+add_filter('woodmart_page_title_enabled', function ($enabled) {
+    return is_front_page() ? false : $enabled;
+});
+// Also disable via WoodMart option filter
+add_filter('woodmart_get_opt', function ($val, $name) {
+    if ($name === 'page-title' && is_front_page()) return '0';
+    return $val;
+}, 10, 2);
+
 // ── Inject CSS variable override early (before WoodMart generates its CSS) ───
 add_action('wp_head', function () {
     echo '<style>:root{--wd-primary-color:#c9a96e!important;--wd-secondary-color:#c9a96e!important;}</style>';

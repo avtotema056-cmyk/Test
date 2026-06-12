@@ -1348,3 +1348,76 @@ label {
 /* ── WoodMart product labels (override green labels) ────────────────────── */
 .wd-product-label { border-radius: 0 !important; }
 .wd-product-label.wd-product-label--new { background: var(--c-dark) !important; color: var(--c-gold) !important; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   PATCH v1.2 — Cart button, mobile menu tip, logo
+══════════════════════════════════════════════════════════════════════════ */
+
+/* ── "RETURN TO SHOP" and all cart-area buttons → dark, not green ────────── */
+.woocommerce .return-to-shop .button,
+.woocommerce .return-to-shop a,
+.woocommerce-cart .wc-proceed-to-checkout a,
+.wd-cart-widget .button,
+.wd-cart-widget a.button,
+.mini-cart-widget .button,
+.woocommerce-mini-cart__buttons a,
+.woocommerce-mini-cart__buttons .button {
+  background: #0e0e0e !important;
+  border-color: #0e0e0e !important;
+  color: #ffffff !important;
+}
+.woocommerce .return-to-shop .button:hover,
+.woocommerce .return-to-shop a:hover,
+.wd-cart-widget .button:hover,
+.woocommerce-mini-cart__buttons a:hover {
+  background: transparent !important;
+  border-color: #0e0e0e !important;
+  color: #0e0e0e !important;
+}
+
+/* ── Hide WoodMart "Set your categories menu..." tip in mobile nav ────────── */
+.wd-nav-mobile .woodmart-nav-tab-categories-tip,
+.wd-nav-mobile [class*="categories-tip"],
+.wd-mobile-nav .woodmart-nav-tab-categories-tip,
+.woodmart-nav-tab-categories-tip,
+.wd-nav-tabs-content p.woodmart-nav-tab-categories-tip,
+.wd-mobile-nav-tabs-content p {
+  display: none !important;
+}
+
+/* ── Logo text in WoodMart header ────────────────────────────────────────── */
+/* Show our PHP-injected text logo regardless of WoodMart header variant */
+.whb-logo .site-logo-text,
+.wd-header .site-logo-text,
+.custom-logo-link.site-logo-text {
+  display: inline-block !important;
+  font-family: 'Cormorant Garamond', Georgia, serif !important;
+  font-size: 19px !important;
+  font-weight: 400 !important;
+  letter-spacing: 3.5px !important;
+  text-transform: uppercase !important;
+  color: #ffffff !important;
+  text-decoration: none !important;
+  line-height: 1 !important;
+}
+
+/* Hide any leftover WoodMart image logo */
+.whb-logo img,
+.site-logo img,
+.custom-logo-link img:not(.site-logo-text img) {
+  display: none !important;
+}
+
+/* Ensure text logo has correct colour in scrolled/sticky state */
+.smk-scrolled .site-logo-text,
+.smk-scrolled .whb-logo .site-logo-text { color: #ffffff !important; }
+
+/* ── Front page: hide the "Главная" page-title bar absolutely ────────────── */
+.smk-homepage .wd-page-title,
+.smk-homepage .woodmart-page-title,
+.smk-homepage .page-title-bar,
+.smk-homepage .wd-page-title-bar,
+.smk-homepage .whb-page-title,
+.smk-homepage .page-title,
+.smk-homepage h1.entry-title,
+.smk-homepage .wp-block-post-title { display: none !important; }
