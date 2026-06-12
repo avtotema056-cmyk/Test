@@ -1,6 +1,11 @@
 name: Setup ShopSmoking
 on:
   workflow_dispatch:
+    inputs:
+      script:
+        description: 'Script to run (shopsmoking or seo)'
+        required: false
+        default: 'seo'
 jobs:
   setup:
     runs-on: ubuntu-latest
@@ -14,7 +19,9 @@ jobs:
           echo "${{ secrets.VPS_SSH_KEY }}" | base64 -d > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -H 176.124.212.75 >> ~/.ssh/known_hosts
-      - name: Upload setup script
-        run: scp -i ~/.ssh/id_ed25519 .github/scripts/setup_shopsmoking.php root@176.124.212.75:/tmp/setup_shopsmoking.php
-      - name: Run setup script
-        run: ssh -i ~/.ssh/id_ed25519 root@176.124.212.75 "cd /var/www/fastuser/data/www/shopsmoking.ru && wp eval-file /tmp/setup_shopsmoking.php --allow-root"
+      - name: Upload scripts
+        run: |
+          scp -i ~/.ssh/id_ed25519 .github/scripts/setup_shopsmoking.php root@176.124.212.75:/tmp/setup_shopsmoking.php
+          scp -i ~/.ssh/id_ed25519 .github/scripts/setup_seo.php root@176.124.212.75:/tmp/setup_seo.php
+      - name: Run SEO setup
+        run: ssh -i ~/.ssh/id_ed25519 root@176.124.212.75 "cd /var/www/fastuser/data/www/shopsmoking.ru && wp eval-file /tmp/setup_seo.php --allow-root"
