@@ -1354,23 +1354,39 @@ label {
 ══════════════════════════════════════════════════════════════════════════ */
 
 /* ── "RETURN TO SHOP" and all cart-area buttons → dark, not green ────────── */
+/* WoodMart side/offcanvas cart popup */
+.wd-side-cart .return-to-shop a,
+.wd-side-cart .return-to-shop .button,
+.wd-cart-popup .return-to-shop a,
+.wd-cart-popup .return-to-shop .button,
+.wd-offcanvas-cart .return-to-shop a,
+.woodmart-cart-popup .return-to-shop a,
+/* Standard WooCommerce cart page */
 .woocommerce .return-to-shop .button,
 .woocommerce .return-to-shop a,
-.woocommerce-cart .wc-proceed-to-checkout a,
+/* Generic WoodMart cart widget buttons */
 .wd-cart-widget .button,
 .wd-cart-widget a.button,
+.wd-cart-widget .wd-btn,
 .mini-cart-widget .button,
 .woocommerce-mini-cart__buttons a,
-.woocommerce-mini-cart__buttons .button {
+.woocommerce-mini-cart__buttons .button,
+/* Catch-all: any button inside any cart-related panel */
+[class*="cart"] .return-to-shop a,
+[class*="cart"] .return-to-shop .button {
   background: #0e0e0e !important;
+  background-color: #0e0e0e !important;
   border-color: #0e0e0e !important;
   color: #ffffff !important;
 }
+.wd-side-cart .return-to-shop a:hover,
+.wd-cart-popup .return-to-shop a:hover,
 .woocommerce .return-to-shop .button:hover,
 .woocommerce .return-to-shop a:hover,
 .wd-cart-widget .button:hover,
 .woocommerce-mini-cart__buttons a:hover {
   background: transparent !important;
+  background-color: transparent !important;
   border-color: #0e0e0e !important;
   color: #0e0e0e !important;
 }

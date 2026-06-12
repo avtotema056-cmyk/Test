@@ -116,6 +116,54 @@ add_action('wp_head', function () {
     echo '<style>:root{--wd-primary-color:#c9a96e!important;--wd-secondary-color:#c9a96e!important;}</style>';
 }, 1);
 
+// ── Force Russian translations for strings WooCommerce/WoodMart leave in English ─
+add_filter('gettext', function ($translated, $original, $domain) {
+    static $map = [
+        'Return to shop'    => 'Вернуться в магазин',
+        'Return To Shop'    => 'Вернуться в магазин',
+        'RETURN TO SHOP'    => 'ВЕРНУТЬСЯ В МАГАЗИН',
+        'Shopping cart'     => 'Корзина',
+        'Cart'              => 'Корзина',
+        'Close'             => 'Закрыть',
+        'Your cart'         => 'Ваша корзина',
+        'View cart'         => 'Перейти в корзину',
+        'Checkout'          => 'Оформить заказ',
+        'Add to cart'       => 'В корзину',
+        'Added to cart'     => 'Добавлен в корзину',
+        'Product'           => 'Товар',
+        'Price'             => 'Цена',
+        'Total'             => 'Итого',
+        'Subtotal'          => 'Подытог',
+        'Remove'            => 'Удалить',
+        'Update cart'       => 'Обновить корзину',
+        'Proceed to checkout' => 'Оформить заказ',
+        'No products in the cart.' => 'Корзина пуста.',
+        'Free!'             => 'Бесплатно!',
+        'Sale!'             => 'Скидка!',
+        'Out of stock'      => 'Нет в наличии',
+        'In stock'          => 'В наличии',
+        'Search'            => 'Поиск',
+        'Menu'              => 'Меню',
+        'Home'              => 'Главная',
+        'Shop'              => 'Каталог',
+        'My account'        => 'Личный кабинет',
+        'Wishlist'          => 'Избранное',
+        'Compare'           => 'Сравнить',
+        'Categories'        => 'Категории',
+        'Set your categories menu in Header builder → Mobile → Mobile menu element → Show/Hide → Choose menu'
+            => '',
+    ];
+    return $map[$original] ?? $translated;
+}, 10, 3);
+
+// Same filter for ngettext (plurals)
+add_filter('ngettext', function ($translated, $single, $plural, $number, $domain) {
+    if ($single === '%s item' || $single === '%s product') {
+        return $number === 1 ? "$number товар" : ($number < 5 ? "$number товара" : "$number товаров");
+    }
+    return $translated;
+}, 10, 5);
+
 // ── Helper: render a product card HTML ───────────────────────────────────────
 function smk_product_card(WC_Product $product, string $size = 'woocommerce_single'): void {
     $id       = $product->get_id();
