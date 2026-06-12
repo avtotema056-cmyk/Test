@@ -69,15 +69,32 @@ add_action('template_redirect', function () {
     }
 });
 
-// ── Custom footer text ────────────────────────────────────────────────────────
-add_filter('woodmart_footer_copyright_text', function () {
-    return '&copy; ' . date('Y') . ' Магазин Смокинг, Оренбург. Все права защищены.';
-});
+// ── Footer copyright (WoodMart uses several filter names) ────────────────────
+$smk_copy = fn() => '&copy; ' . date('Y') . ' Магазин Смокинг, Оренбург. Все права защищены.';
+add_filter('woodmart_footer_copyright_text', $smk_copy);
+add_filter('woodmart_copyright_text',        $smk_copy);
+add_filter('woodmart_get_opt',               function ($val, $name) use ($smk_copy) {
+    return $name === 'footer-copyright' ? $smk_copy() : $val;
+}, 10, 2);
 
 // ── Add phone to WoodMart header top bar ─────────────────────────────────────
 add_action('woodmart_header_before_top_bar_right', function () {
     echo '<span class="smk-header-phone"><a href="' . SMK_PHONE_HREF . '">' . SMK_PHONE . '</a></span>';
 });
+
+// ── Override logo: always show text instead of image ─────────────────────────
+add_filter('get_custom_logo', function () {
+    $name = 'Магазин Смокинг';
+    $url  = esc_url(home_url('/'));
+    return '<a href="' . $url . '" class="custom-logo-link site-logo-text" rel="home"
+              style="font-family:\'Cormorant Garamond\',serif;font-size:19px;letter-spacing:3.5px;text-transform:uppercase;color:#fff;font-weight:400;text-decoration:none;">'
+           . esc_html($name) . '</a>';
+}, 20);
+
+// ── Inject CSS variable override early (before WoodMart generates its CSS) ───
+add_action('wp_head', function () {
+    echo '<style>:root{--wd-primary-color:#c9a96e!important;--wd-secondary-color:#c9a96e!important;}</style>';
+}, 1);
 
 // ── Helper: render a product card HTML ───────────────────────────────────────
 function smk_product_card(WC_Product $product, string $size = 'woocommerce_single'): void {

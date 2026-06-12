@@ -1218,3 +1218,133 @@ label {
   .smk-hero__title { font-size: 42px; }
   .smk-hero__btns .smk-btn { width: 100%; justify-content: center; }
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   PATCH v1.1 — Fix WoodMart green, logo, social bar, page title
+══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Override WoodMart CSS variables (generated inline by WoodMart) ─────── */
+:root {
+  --wd-primary-color: #c9a96e !important;
+  --wd-primary-color-rgb: 201,169,110 !important;
+  --wd-secondary-color: #c9a96e !important;
+}
+
+/* ── Logo: hide WoodMart demo image, show site name as text ─────────────── */
+.site-logo img,
+.site-logo .custom-logo,
+.custom-logo-link img,
+.wd-header img.custom-logo { display: none !important; }
+
+.site-logo .site-title,
+.site-branding .site-title { display: block !important; }
+
+.site-logo .site-title a,
+.site-branding .site-title a,
+.site-logo a.custom-logo-link {
+  font-family: 'Cormorant Garamond', Georgia, serif !important;
+  font-size: 19px !important;
+  font-weight: 400 !important;
+  letter-spacing: 3.5px !important;
+  text-transform: uppercase !important;
+  color: #ffffff !important;
+  line-height: 1 !important;
+  text-decoration: none !important;
+}
+.site-logo a.custom-logo-link::after {
+  content: 'Магазин Смокинг';
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 19px;
+  font-weight: 400;
+  letter-spacing: 3.5px;
+  text-transform: uppercase;
+  color: #ffffff;
+}
+
+/* ── Social top bar → dark ──────────────────────────────────────────────── */
+.whb-top-bar,
+.whb-top-bar-inner,
+.wd-header .whb-top-bar-wrapper,
+.woodmart-top-bar { background: #0a0a0a !important; border-bottom: 1px solid rgba(255,255,255,0.06) !important; }
+
+.whb-top-bar a,
+.whb-top-bar .social-icon,
+.woodmart-top-bar a { color: rgba(255,255,255,0.38) !important; transition: color 0.2s !important; }
+
+.whb-top-bar a:hover,
+.woodmart-top-bar a:hover { color: #c9a96e !important; }
+
+/* Target green SVG icons in top bar */
+.whb-top-bar svg,
+.whb-top-bar use,
+.social-icons-widget svg { color: rgba(255,255,255,0.38) !important; fill: rgba(255,255,255,0.38) !important; }
+
+/* ── Hide page title bar on front page ──────────────────────────────────── */
+.smk-homepage .wd-page-title,
+.smk-homepage .woodmart-page-title,
+.smk-homepage .page-title-bar,
+.smk-homepage .wd-page-title-bar { display: none !important; }
+
+/* ── Mobile navigation ──────────────────────────────────────────────────── */
+/* Active/current item: gold instead of green */
+.wd-mobile-nav .menu-item.current-menu-item > a,
+.wd-nav-mobile .current-menu-item > a,
+.woodmart-navigation .current-menu-item > a { color: #c9a96e !important; }
+
+/* Mobile tabs (MENU / CATEGORIES) */
+.woodmart-nav-tab.active,
+.woodmart-nav-tab:focus { color: #c9a96e !important; border-bottom-color: #c9a96e !important; }
+
+/* ── WoodMart green anywhere it bleeds through ──────────────────────────── */
+.wd-primary-bg, [class*="wd-primary"] { background-color: #c9a96e !important; }
+.wd-primary-color, [class*="wd-primary-color"] { color: #c9a96e !important; }
+
+/* WoodMart loader/spinner */
+.wd-loading:after,
+.wd-preloader { border-color: rgba(201,169,110,0.2) !important; border-top-color: #c9a96e !important; }
+
+/* ── WoodMart footer credits — hide ─────────────────────────────────────── */
+.wd-footer .woodmart-powered,
+.wd-footer-powered,
+.powered-by-woodmart,
+.woodmart-copyright .woodmart-powered { display: none !important; }
+
+/* Override footer bottom bar */
+.footer-bottom,
+.wd-footer .footer-bottom,
+.wd-copyright-area {
+  background: #080808 !important;
+  padding: 20px 0 !important;
+  border-top: 1px solid rgba(255,255,255,0.05) !important;
+}
+.footer-bottom * { color: rgba(255,255,255,0.28) !important; font-size: 12px !important; }
+
+/* Our copyright text */
+.smk-copyright {
+  text-align: center;
+  padding: 20px;
+  background: #080808;
+  color: rgba(255,255,255,0.28);
+  font-size: 12px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+
+/* ── Mobile sticky bottom bar ───────────────────────────────────────────── */
+.wd-sticky-bar,
+.wd-bottom-bar {
+  background: #0e0e0e !important;
+  border-top: 1px solid rgba(255,255,255,0.1) !important;
+}
+.wd-sticky-bar a,
+.wd-bottom-bar a { color: rgba(255,255,255,0.5) !important; font-size: 10px !important; }
+.wd-sticky-bar a:hover,
+.wd-sticky-bar a.active,
+.wd-bottom-bar a:hover { color: #c9a96e !important; }
+.wd-sticky-bar .cart-count { background: #c9a96e !important; color: #fff !important; }
+
+/* ── Sidebar button ─────────────────────────────────────────────────────── */
+.wd-sidebar-btn, .sidebar-toggle { color: rgba(255,255,255,0.5) !important; }
+
+/* ── WoodMart product labels (override green labels) ────────────────────── */
+.wd-product-label { border-radius: 0 !important; }
+.wd-product-label.wd-product-label--new { background: var(--c-dark) !important; color: var(--c-gold) !important; }
