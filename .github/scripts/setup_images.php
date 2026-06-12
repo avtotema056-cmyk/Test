@@ -1,123 +1,127 @@
 <?php
 /**
- * Import product images from kingsence.ru into WP media library
- * and attach them to the first product (Костюм Монако, ID detection auto)
+ * Attach existing media library images to product
+ * Uses images already uploaded to shopsmoking.ru
  */
+
+// ── Find the product ──────────────────────────────────────────────────────────
+$products = wc_get_products(['limit' => 5, 'status' => 'publish']);
+if (empty($products)) {
+    echo "✗ Нет товаров. Сначала запусти setup_fix.php\n";
+    exit;
+}
+$product    = $products[0];
+$product_id = $product->get_id();
+echo "→ Товар ID:{$product_id} — {$product->get_name()}\n\n";
+
+// ── Step 1: Find images already in the media library ─────────────────────────
+$existing = get_posts([
+    'post_type'      => 'attachment',
+    'post_mime_type' => ['image/jpeg', 'image/png', 'image/webp'],
+    'post_status'    => 'inherit',
+    'posts_per_page' => 20,
+    'orderby'        => 'date',
+    'order'          => 'DESC',
+]);
+
+echo "Найдено в медиатеке: " . count($existing) . " изображений\n";
+foreach ($existing as $att) {
+    echo "  [{$att->ID}] " . wp_get_attachment_url($att->ID) . "\n";
+}
+
+// If we have images, attach them to the product
+if (!empty($existing)) {
+    $ids = array_column($existing, 'ID');
+
+    // Featured image — first available
+    set_post_thumbnail($product_id, $ids[0]);
+    echo "\n✓ Главное фото: ID {$ids[0]}\n";
+
+    // Gallery — remaining (up to 4 more)
+    if (count($ids) > 1) {
+        $gallery = array_slice($ids, 1, 4);
+        update_post_meta($product_id, '_product_image_gallery', implode(',', $gallery));
+        echo "✓ Галерея: " . implode(', ', $gallery) . "\n";
+    }
+    echo "\nГотово!\n";
+    exit;
+}
+
+// ── Step 2: No images in library — download from kingsence.ru ────────────────
+echo "\nВ медиатеке нет изображений. Пробую скачать с kingsence.ru...\n";
 
 require_once ABSPATH . 'wp-admin/includes/media.php';
 require_once ABSPATH . 'wp-admin/includes/file.php';
 require_once ABSPATH . 'wp-admin/includes/image.php';
 
-// ── Find existing products ────────────────────────────────────────────────────
-$products = wc_get_products(['limit' => 5, 'status' => 'publish']);
-if (empty($products)) {
-    echo "✗ No products found. Run setup_fix.php first.\n";
-    exit;
-}
-$product    = $products[0];
-$product_id = $product->get_id();
-echo "→ Attaching images to product ID:{$product_id} — {$product->get_name()}\n\n";
+// Known kingsence.ru product image paths (VPS has direct access)
+$urls_to_try = [
+    'https://kingsence.ru/wp-content/uploads/',
+];
 
-// ── Try to fetch image list from kingsence.ru ─────────────────────────────────
-$shop_html = wp_remote_retrieve_body(
-    wp_remote_get('https://kingsence.ru/shop/', [
-        'timeout'    => 15,
-        'user-agent' => 'Mozilla/5.0 (compatible; Googlebot/2.1)',
-    ])
-);
+// Fetch shop page from kingsence.ru to get real image URLs
+$response = wp_remote_get('https://kingsence.ru/shop/', [
+    'timeout'    => 20,
+    'user-agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+]);
 
 $image_urls = [];
-
-if ($shop_html) {
-    // Extract full-size WooCommerce product image URLs
+if (!is_wp_error($response) && wp_remote_retrieve_response_code($response) === 200) {
+    $html = wp_remote_retrieve_body($response);
     preg_match_all(
         '~https://kingsence\.ru/wp-content/uploads/[^\s"\'<>]+\.(?:jpg|jpeg|webp|png)~i',
-        $shop_html,
-        $matches
+        $html, $matches
     );
-    // Remove thumbnail duplicates (-150x150, -300x300 etc.)
     foreach (array_unique($matches[0]) as $url) {
         if (!preg_match('~-\d+x\d+\.~', $url)) {
             $image_urls[] = $url;
         }
     }
-    echo "Found " . count($image_urls) . " images on kingsence.ru/shop/\n";
+    echo "Найдено на kingsence.ru: " . count($image_urls) . " изображений\n";
 } else {
-    echo "⚠ Could not fetch kingsence.ru/shop/ — using fallback placeholder images\n";
+    $err = is_wp_error($response) ? $response->get_error_message() : wp_remote_retrieve_response_code($response);
+    echo "⚠ kingsence.ru недоступен: $err\n";
 }
 
-// ── Fallback: royalty-free suit placeholder images ────────────────────────────
+// Fallback — import from shopsmoking.ru own uploads (files already there)
 if (empty($image_urls)) {
-    // Picsum photos — dark/elegant style photos as placeholders
-    $image_urls = [
-        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&q=80', // man in suit
-        'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=800&q=80', // suit close-up
-        'https://images.unsplash.com/photo-1593030761757-71fae45fa0e7?w=800&q=80', // elegant suit
-    ];
-    echo "Using " . count($image_urls) . " Unsplash placeholder images\n";
+    echo "Использую файлы из /uploads/ на shopsmoking.ru...\n";
+    $upload_dir = wp_upload_dir();
+    $files = glob($upload_dir['basedir'] . '/**/*.{jpg,jpeg,png,webp}', GLOB_BRACE);
+    if (empty($files)) {
+        $files = glob($upload_dir['basedir'] . '/*.{jpg,jpeg,png,webp}', GLOB_BRACE);
+    }
+    foreach (array_slice($files, 0, 5) as $file) {
+        if (!preg_match('~-\d+x\d+\.~', $file)) {
+            $image_urls[] = $upload_dir['baseurl'] . str_replace($upload_dir['basedir'], '', $file);
+        }
+    }
+    echo "Найдено локально: " . count($image_urls) . "\n";
 }
 
-// ── Download and import each image ───────────────────────────────────────────
-$imported     = [];
-$limit        = 5; // max images to import
-$count        = 0;
-
-foreach ($image_urls as $url) {
-    if ($count >= $limit) break;
-
-    echo "Downloading: $url\n";
-
-    // Download to temp file
+// Import and attach
+$imported = [];
+foreach (array_slice($image_urls, 0, 5) as $url) {
+    echo "Загружаю: $url\n";
     $tmp = download_url($url, 30);
-    if (is_wp_error($tmp)) {
-        echo "  ✗ Download failed: " . $tmp->get_error_message() . "\n";
-        continue;
-    }
+    if (is_wp_error($tmp)) { echo "  ✗ " . $tmp->get_error_message() . "\n"; continue; }
 
-    // Guess file name from URL
     $filename = sanitize_file_name(basename(parse_url($url, PHP_URL_PATH)));
-    if (!preg_match('/\.(jpg|jpeg|png|webp)$/i', $filename)) {
-        $filename .= '.jpg';
+    if (!preg_match('/\.(jpg|jpeg|png|webp)$/i', $filename)) $filename .= '.jpg';
+
+    $id = media_handle_sideload(['name' => $filename, 'tmp_name' => $tmp], $product_id);
+    if (is_wp_error($id)) { echo "  ✗ " . $id->get_error_message() . "\n"; continue; }
+
+    $imported[] = $id;
+    echo "  ✓ ID:$id\n";
+}
+
+if (!empty($imported)) {
+    set_post_thumbnail($product_id, $imported[0]);
+    if (count($imported) > 1) {
+        update_post_meta($product_id, '_product_image_gallery', implode(',', array_slice($imported, 1)));
     }
-
-    $file_array = [
-        'name'     => $filename,
-        'tmp_name' => $tmp,
-    ];
-
-    $attach_id = media_handle_sideload($file_array, $product_id, $product->get_name());
-
-    if (is_wp_error($attach_id)) {
-        echo "  ✗ Import failed: " . $attach_id->get_error_message() . "\n";
-        @unlink($tmp);
-        continue;
-    }
-
-    $imported[] = $attach_id;
-    $count++;
-    echo "  ✓ Imported attachment ID:{$attach_id}\n";
-}
-
-if (empty($imported)) {
-    echo "\n✗ No images imported.\n";
-    exit;
-}
-
-// ── Attach to product ─────────────────────────────────────────────────────────
-// First image → featured (thumbnail)
-set_post_thumbnail($product_id, $imported[0]);
-echo "\n✓ Featured image set: attachment ID:{$imported[0]}\n";
-
-// Remaining → gallery
-if (count($imported) > 1) {
-    $gallery_ids = array_slice($imported, 1);
-    update_post_meta($product_id, '_product_image_gallery', implode(',', $gallery_ids));
-    echo "✓ Gallery set: " . implode(', ', $gallery_ids) . "\n";
-}
-
-// ── Summary ───────────────────────────────────────────────────────────────────
-echo "\n=== Images imported ===\n";
-echo "Total: " . count($imported) . "\n";
-foreach ($imported as $id) {
-    echo "  [{$id}] " . wp_get_attachment_url($id) . "\n";
+    echo "\n✓ Готово! Прикреплено " . count($imported) . " фото к товару ID:{$product_id}\n";
+} else {
+    echo "\n✗ Не удалось добавить изображения\n";
 }
