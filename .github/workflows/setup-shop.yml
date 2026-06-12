@@ -3,9 +3,9 @@ on:
   workflow_dispatch:
     inputs:
       script:
-        description: 'Script to run (shopsmoking or seo)'
+        description: 'Script to run: shopsmoking | seo | woodmart | all'
         required: false
-        default: 'seo'
+        default: 'woodmart'
 jobs:
   setup:
     runs-on: ubuntu-latest
@@ -23,5 +23,13 @@ jobs:
         run: |
           scp -i ~/.ssh/id_ed25519 .github/scripts/setup_shopsmoking.php root@176.124.212.75:/tmp/setup_shopsmoking.php
           scp -i ~/.ssh/id_ed25519 .github/scripts/setup_seo.php root@176.124.212.75:/tmp/setup_seo.php
+          scp -i ~/.ssh/id_ed25519 .github/scripts/setup_woodmart.php root@176.124.212.75:/tmp/setup_woodmart.php
+      - name: Run shopsmoking setup
+        if: ${{ inputs.script == 'shopsmoking' || inputs.script == 'all' }}
+        run: ssh -i ~/.ssh/id_ed25519 root@176.124.212.75 "cd /var/www/fastuser/data/www/shopsmoking.ru && wp eval-file /tmp/setup_shopsmoking.php --allow-root"
       - name: Run SEO setup
+        if: ${{ inputs.script == 'seo' || inputs.script == 'all' }}
         run: ssh -i ~/.ssh/id_ed25519 root@176.124.212.75 "cd /var/www/fastuser/data/www/shopsmoking.ru && wp eval-file /tmp/setup_seo.php --allow-root"
+      - name: Run WoodMart setup
+        if: ${{ inputs.script == 'woodmart' || inputs.script == 'all' }}
+        run: ssh -i ~/.ssh/id_ed25519 root@176.124.212.75 "cd /var/www/fastuser/data/www/shopsmoking.ru && wp eval-file /tmp/setup_woodmart.php --allow-root"
