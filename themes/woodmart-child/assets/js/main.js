@@ -46,4 +46,49 @@
     });
   }
 
+  // ── Fix WoodMart green "Return to shop" button → dark ────────────────────
+  function fixButtons(root) {
+    (root || document).querySelectorAll(
+      '.return-to-shop a, .return-to-shop .button'
+    ).forEach(function (btn) {
+      btn.style.setProperty('background-color', '#0e0e0e', 'important');
+      btn.style.setProperty('background',       '#0e0e0e', 'important');
+      btn.style.setProperty('border-color',     '#0e0e0e', 'important');
+      btn.style.setProperty('color',            '#ffffff', 'important');
+    });
+  }
+  fixButtons();
+
+  // ── Remove "Set your categories menu..." tip text in mobile nav ───────────
+  function removeCatTip(root) {
+    (root || document).querySelectorAll(
+      '[class*="categories-tip"], .woodmart-nav-tab-categories-tip'
+    ).forEach(function (el) { el.remove(); });
+
+    // Fallback: find by text content inside mobile nav paragraphs
+    (root || document).querySelectorAll(
+      '.wd-nav-mobile p, .wd-mobile-nav p, .woodmart-mobile-nav p, ' +
+      '.wd-nav-tabs-content p'
+    ).forEach(function (p) {
+      if (p.textContent && p.textContent.indexOf('Header builder') !== -1) {
+        p.parentElement.remove();
+      }
+    });
+  }
+  removeCatTip();
+
+  // Watch for WoodMart's dynamically-rendered cart popup and mobile menu
+  if ('MutationObserver' in window) {
+    var mo = new MutationObserver(function (mutations) {
+      mutations.forEach(function (m) {
+        m.addedNodes.forEach(function (node) {
+          if (node.nodeType !== 1) return;
+          fixButtons(node);
+          removeCatTip(node);
+        });
+      });
+    });
+    mo.observe(document.body, { childList: true, subtree: true });
+  }
+
 })(jQuery);

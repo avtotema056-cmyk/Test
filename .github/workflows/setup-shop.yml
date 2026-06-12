@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       script:
-        description: 'Script to run: shopsmoking | seo | woodmart | all'
+        description: 'Script to run: shopsmoking | seo | woodmart | fix | images | all'
         required: false
         default: 'woodmart'
 jobs:
@@ -39,3 +39,9 @@ jobs:
       - name: Run fix script
         if: ${{ inputs.script == 'fix' || inputs.script == 'all' }}
         run: ssh -i ~/.ssh/id_ed25519 root@176.124.212.75 "cd /var/www/fastuser/data/www/shopsmoking.ru && wp eval-file /tmp/setup_fix.php --allow-root"
+      - name: Upload images script
+        if: ${{ inputs.script == 'images' || inputs.script == 'all' }}
+        run: scp -i ~/.ssh/id_ed25519 .github/scripts/setup_images.php root@176.124.212.75:/tmp/setup_images.php
+      - name: Run images import
+        if: ${{ inputs.script == 'images' || inputs.script == 'all' }}
+        run: ssh -i ~/.ssh/id_ed25519 root@176.124.212.75 "cd /var/www/fastuser/data/www/shopsmoking.ru && wp eval-file /tmp/setup_images.php --allow-root"
