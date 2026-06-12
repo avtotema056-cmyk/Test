@@ -33,3 +33,9 @@ jobs:
       - name: Run WoodMart setup
         if: ${{ inputs.script == 'woodmart' || inputs.script == 'all' }}
         run: ssh -i ~/.ssh/id_ed25519 root@176.124.212.75 "cd /var/www/fastuser/data/www/shopsmoking.ru && wp eval-file /tmp/setup_woodmart.php --allow-root"
+      - name: Upload fix script
+        if: ${{ inputs.script == 'fix' || inputs.script == 'all' }}
+        run: scp -i ~/.ssh/id_ed25519 .github/scripts/setup_fix.php root@176.124.212.75:/tmp/setup_fix.php
+      - name: Run fix script
+        if: ${{ inputs.script == 'fix' || inputs.script == 'all' }}
+        run: ssh -i ~/.ssh/id_ed25519 root@176.124.212.75 "cd /var/www/fastuser/data/www/shopsmoking.ru && wp eval-file /tmp/setup_fix.php --allow-root"
