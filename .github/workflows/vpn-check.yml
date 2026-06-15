@@ -1,0 +1,24 @@
+name: VPN Check
+
+on:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install sshpass
+        run: sudo apt-get install -y sshpass
+
+      - name: Check VPN status
+        env:
+          SSHPASS: ${{ secrets.VPN_SSH_PASS }}
+        run: |
+          sshpass -e ssh -o StrictHostKeyChecking=no root@5.129.224.199 "
+            echo '=== WireGuard ===' &&
+            (wg show || echo 'WireGuard не найден') &&
+            echo '=== Сетевые интерфейсы ===' &&
+            ip a | grep -E '^[0-9]+:|inet ' &&
+            echo '=== Открытые порты ===' &&
+            ss -tulnp | grep -E 'LISTEN' | head -20
+          "
